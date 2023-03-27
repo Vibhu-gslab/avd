@@ -3,9 +3,7 @@ from typing import Iterable
 from .vendor.eos_designs.eos_designs_facts import EosDesignsFacts
 
 
-def eos_designs_facts(
-    all_hostvars: dict[str, dict],
-) -> dict[str, dict]:
+def eos_designs_facts(all_hostvars: dict[str, dict]) -> dict[str, dict]:
     """
     Render eos_designs_facts from hostvars.
 

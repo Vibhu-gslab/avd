@@ -72,6 +72,7 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 	mkdir -p $(TESTS_ARTIFACTS)/eos_designs/expected_configs
 	mkdir -p $(TESTS_ARTIFACTS)/eos_designs/configs
 
+
 ## eos_cli_config_gen
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/molecule/eos_cli_config_gen/inventory/group_vars/all.yml $(TESTS_ARTIFACTS)/eos_cli_config_gen/
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/molecule/eos_cli_config_gen/inventory/host_vars/* $(TESTS_ARTIFACTS)/eos_cli_config_gen/vars/
@@ -89,11 +90,20 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/defaults/main/*.yml $(TESTS_ARTIFACTS)/eos_designs/
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/molecule/eos_designs_unit_tests/intended/structured_configs/*.yml $(TESTS_ARTIFACTS)/eos_designs/expected_structured_configs/
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/molecule/eos_designs_unit_tests/intended/configs/*.cfg $(TESTS_ARTIFACTS)/eos_designs/expected_configs/
+
+## Remove tests with custom templates
+	rm $(TESTS_ARTIFACTS)/eos_designs/expected_structured_configs/CUSTOM-TEMPLATES*.yml
+	rm $(TESTS_ARTIFACTS)/eos_designs/expected_configs/CUSTOM-TEMPLATES*.cfg
+
+## Vendor Overrides
+	cp -r $(CURRENT_DIR)/vendor_overrides/tests/* $(VENDOR_DIR)/tests/
+
+## Run ansible-inventory to get all group-vars and inherited variables per host
 	for FILE in `ls -1 $(TESTS_ARTIFACTS)/eos_designs/expected_structured_configs/*.yml` ; \
 	do \
 	basename $${FILE}; \
 	ansible-inventory -i $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/molecule/eos_designs_unit_tests/inventory/hosts.yml \
-	-y --host "`basename $${FILE%.yml}`" > $(TESTS_ARTIFACTS)/eos_designs/vars/`basename $${FILE}`; \
+	--host "`basename $${FILE%.yml}`" > $(TESTS_ARTIFACTS)/eos_designs/vars/`basename $${FILE%.yml}.json`; \
 	done
 
 ## Update test vars for default vars.
@@ -105,7 +115,8 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml
+	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
+		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
 	sed -i -e "s/\"\(\[.*\]\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
 	sed -i -e "s/\"\({.*}\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
@@ -113,25 +124,27 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 
 ## Update test vars for devices
 ## Remove reference to playbook_dir
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i '/{{ playbook_dir }}/d' {} +
+## find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i '/{{ playbook_dir }}/d' {} +
 ## Fix ' -> " around jinja and '' -> ' inside jinja.
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e "s/'\({{.*\)''\(.*\)''\(.*}}\)'/\"\1'\2'\3\"/g" {} +
+## find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e "s/'\({{.*\)''\(.*\)''\(.*}}\)'/\"\1'\2'\3\"/g" {} +
 ## Remove inline jinja refering to switch.*
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e '/{{ switch\.id == 6 }}/d' {} +
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e 's/{{ switch.mgmt_interface }}/Management1/g' {} +
+## find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e '/{{ switch\.id == 6 }}/d' {} +
+## find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e 's/{{ switch.mgmt_interface }}/Management1/g' {} +
 ## Remove any references to custom_templates. This _will_ give changes in the output, so TODO remove these hosts.
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e "s/custom_templates\/.*$$/null/g" {} +
+## find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e "s/custom_templates\/.*)$$/null\"/g" {} +
 
 	$(CURRENT_DIR)/runner.py --template_vars \
-	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*.yml' \
+	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*' \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml
+	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
+		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e "s/'\(\[.*\]\)'/\1/g" {} +
-	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.yml' -exec sed -i -e "s/'\({.*}\)'/\1/g" {} +
+## Remove quotes from templated lists or dicts: "[...]" -> [...] and "{...}" -> {...}
+	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e 's/"\(\[.*\]\)"/\1/g' {} +
+	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e 's/"\({.*}\)"/\1/g' {} +
 
 .PHONY: test-0
 test-0: ## Run tests by parsing test inputs and comparing with expected configs
@@ -158,6 +171,7 @@ test-2: ## Run tests by parsing test inputs and comparing with expected structur
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
+		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml \
 		--struct_cfgfiles $(TESTS_ARTIFACTS)/eos_designs/structured_configs
 	diff -q $(TESTS_ARTIFACTS)/eos_designs/expected_structured_configs/ $(TESTS_ARTIFACTS)/eos_designs/structured_configs/
 
@@ -170,7 +184,8 @@ test-1: ## Run tests by parsing test inputs and comparing with expected configs
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
 	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml
+	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
+		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
 .PHONE: test
 test: test-1 test-3

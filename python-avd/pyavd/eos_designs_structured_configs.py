@@ -28,11 +28,7 @@ EOS_DESIGNS_MODULES = {
 }
 
 
-def eos_designs_structured_configs(
-    hostname: str,
-    vars: dict,
-    modules: list[str] | None = None,
-) -> dict:
+def eos_designs_structured_configs(hostname: str, vars: dict, modules: list[str] | None = None) -> dict:
     """
     Main function for eos_designs_structured_configs to render structured configs for one device.
 

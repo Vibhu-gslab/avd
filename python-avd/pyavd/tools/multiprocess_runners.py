@@ -165,7 +165,7 @@ def run_eos_designs_structured_configs_process(device_var_file: str, common_vars
     )
 
     structured_configuration = eos_designs_structured_configs(hostname, device_vars)
-    write_result(path.join(struct_cfg_file_dir, f"{hostname}.yml"), yaml_dump(structured_configuration, sort_keys=False, width=260))
+    write_result(path.join(struct_cfg_file_dir, f"{hostname}.yml"), yaml_dump(structured_configuration, sort_keys=False, width=130))
     print(f"OK: {hostname}")
 
 
