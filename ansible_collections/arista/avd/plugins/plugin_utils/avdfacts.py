@@ -62,7 +62,9 @@ class AvdFacts:
 
     def template_var(self, template_file, template_vars):
         """
-        Run the simplified templater using the passed Ansible "templar" engine.
+        Run the simplified templater using the passed "templar" engine.
+
+        TODO: Auto detecting if the templar is from Ansible or native python
         """
         try:
             return template_var(template_file, template_vars, self._templar)

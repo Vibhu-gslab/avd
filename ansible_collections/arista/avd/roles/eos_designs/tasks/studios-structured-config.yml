@@ -1,0 +1,20 @@
+---
+- name: Set eos_designs facts per device
+  tags: [build, provision, facts]
+  ansible.builtin.set_fact:
+    switch: "{{ avd_switch_facts[inventory_hostname].switch }}"
+  delegate_to: localhost
+  changed_when: false
+
+- name: Generate device configuration in structured format
+  tags: [build, provision]
+  arista.avd.yaml_templates_to_facts:
+    root_key: structured_config
+    templates: "{{ templates.structured_config }}"
+    #cprofile_file: "structured-{{inventory_hostname}}.prof"
+    template_output: false
+  delegate_to: localhost
+  check_mode: false
+
+# Sets the fact "structured_config" *per device* containing the
+# full structured config you need to return in the API.

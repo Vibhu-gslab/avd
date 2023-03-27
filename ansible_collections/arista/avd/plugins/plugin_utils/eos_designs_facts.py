@@ -5,14 +5,13 @@ import re
 from functools import cached_property
 from hashlib import sha256
 
-from ansible.plugins.filter.core import combine
-
 from ansible_collections.arista.avd.plugins.filter.convert_dicts import convert_dicts
 from ansible_collections.arista.avd.plugins.filter.list_compress import list_compress
 from ansible_collections.arista.avd.plugins.filter.natural_sort import natural_sort
 from ansible_collections.arista.avd.plugins.filter.range_expand import range_expand
 from ansible_collections.arista.avd.plugins.plugin_utils.avdfacts import AvdFacts
 from ansible_collections.arista.avd.plugins.plugin_utils.errors import AristaAvdError, AristaAvdMissingVariableError
+from ansible_collections.arista.avd.plugins.plugin_utils.merge import merge
 from ansible_collections.arista.avd.plugins.plugin_utils.strip_empties import strip_null_from_data
 from ansible_collections.arista.avd.plugins.plugin_utils.utils import default, get, get_item
 from ansible_collections.arista.avd.roles.eos_designs.python_modules.ip_addressing import load_ip_addressing
@@ -261,7 +260,7 @@ class EosDesignsFacts(AvdFacts):
         hostvar_templates = get(self._hostvars, "templates.ip_addressing", default={})
         node_type_templates = get(self._node_type_key_data, "ip_addressing", default={})
         if hostvar_templates or node_type_templates:
-            return combine(hostvar_templates, node_type_templates, recursive=True, list_merge="replace")
+            return merge(hostvar_templates, node_type_templates, recursive=True, list_merge="replace", destructive_merge=False)
         else:
             return {}
 
@@ -275,7 +274,7 @@ class EosDesignsFacts(AvdFacts):
         hostvar_templates = get(self._hostvars, "templates.interface_descriptions", default={})
         node_type_templates = get(self._node_type_key_data, "interface_descriptions", default={})
         if hostvar_templates or node_type_templates:
-            return combine(hostvar_templates, node_type_templates, recursive=True, list_merge="replace")
+            return merge(hostvar_templates, node_type_templates, recursive=True, list_merge="replace", destructive_merge=False)
         else:
             return {}
 
@@ -326,11 +325,9 @@ class EosDesignsFacts(AvdFacts):
                     break
 
         # Load defaults
-        defaults_config = node_type_config.get("defaults", {})
-        # Merge node_group data on top of defaults into combined
-        switch_data["combined"] = combine(defaults_config, switch_data["node_group"], recursive=True, list_merge="replace")
-        # Merge node data on top of combined
-        switch_data["combined"] = combine(switch_data["combined"], node_config, recursive=True, list_merge="replace")
+        defaults_config = get(node_type_config, "defaults", default={})
+        # Merge node_group data and node data on top of defaults into combined
+        switch_data["combined"] = merge(defaults_config, switch_data["node_group"], node_config, recursive=True, list_merge="replace", destructive_merge=False)
 
         return switch_data
 
@@ -753,7 +750,7 @@ class EosDesignsFacts(AvdFacts):
                     parent_profile_name = adapter_profile.get("parent_profile")
                     parent_profile = get_item(port_profiles, "profile", parent_profile_name, default={})
 
-                    adapter_settings = combine(parent_profile, adapter_profile, adapter, recursive=True, list_merge="replace")
+                    adapter_settings = merge(parent_profile, adapter_profile, adapter, recursive=True, list_merge="replace", destructive_merge=False)
 
                     if self.hostname not in adapter_settings.get("switches", []):
                         # This switch is not connected to this endpoint. Skipping.
@@ -800,7 +797,7 @@ class EosDesignsFacts(AvdFacts):
                 adapter_profile = get_item(port_profiles, "profile", profile_name, default={})
                 parent_profile_name = adapter_profile.get("parent_profile")
                 parent_profile = get_item(port_profiles, "profile", parent_profile_name, default={})
-                adapter_settings = combine(parent_profile, adapter_profile, network_port_item, recursive=True, list_merge="replace")
+                adapter_settings = merge(parent_profile, adapter_profile, network_port_item, recursive=True, list_merge="replace", destructive_merge=False)
 
                 if "vlans" in adapter_settings and adapter_settings["vlans"] not in ["all", "", None]:
                     vlans.update(map(int, range_expand(str(adapter_settings["vlans"]))))
