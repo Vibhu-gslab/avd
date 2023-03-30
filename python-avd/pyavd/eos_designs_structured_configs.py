@@ -27,6 +27,8 @@ EOS_DESIGNS_MODULES = {
     "custom_structured_configuration": EosDesignsCustomStructuredConfiguration,
 }
 
+DEFAULT_CUSTOM_STRUCTURED_CONFIGURATION_LIST_MERGE = "append_rp"
+
 
 def eos_designs_structured_configs(hostname: str, vars: dict, modules: list[str] | None = None) -> dict:
     """
@@ -63,18 +65,26 @@ def eos_designs_structured_configs(hostname: str, vars: dict, modules: list[str]
         structured_config,
         vars,
     )
+
     for module in modules:
         if module not in EOS_DESIGNS_MODULES:
             raise ValueError(f"Unknown eos_designs module '{module}' during render of eos_designs_structured_config for host '{hostname}'")
 
         eos_designs_module: AvdFacts = EOS_DESIGNS_MODULES[module](module_vars, None)
         results = eos_designs_module.render()
+
+        # Modules can return a dict or a list of dicts
         if not isinstance(results, list):
             results = [results]
 
         for result in results:
             output_schematools.convert_data(result)
 
-        merge(structured_config, *results, schema=output_schematools.avdschema)
+        if module == "custom_structured_configuration":
+            list_merge = module_vars.get("custom_structured_configuration_list_merge", DEFAULT_CUSTOM_STRUCTURED_CONFIGURATION_LIST_MERGE)
+        else:
+            list_merge = "append"
+
+        merge(structured_config, *results, list_merge=list_merge, schema=output_schematools.avdschema)
 
     return structured_config
