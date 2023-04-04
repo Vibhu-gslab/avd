@@ -47,7 +47,6 @@ copy-libs: ## Copy files from Ansible AVD collection
 .PHONY: fix-libs
 fix-libs: ## Fix/remove various Ansible specifics things from python files
 	rm -f $(VENDOR_DIR)/schema/avdschematools.py
-
 	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
@@ -59,6 +58,7 @@ fix-libs: ## Fix/remove various Ansible specifics things from python files
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible\.utils\.display/from $(VENDOR_IMPORT)\.utils\.display/g' {} +
 	grep 'version:' $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.\+\)/VERSION = "\1"/' > $(PACKAGE_DIR)/version.py
 
 	cp -r $(CURRENT_DIR)/vendor_overrides/* $(VENDOR_DIR)/
