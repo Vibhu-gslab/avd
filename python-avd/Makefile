@@ -47,8 +47,6 @@ copy-libs: ## Copy files from Ansible AVD collection
 .PHONY: fix-libs
 fix-libs: ## Fix/remove various Ansible specifics things from python files
 	rm -f $(VENDOR_DIR)/schema/avdschematools.py
-	rm -f $(VENDOR_DIR)/utils/*template*.py
-	sed -i '/template/d' $(VENDOR_DIR)/utils/__init__.py
 
 	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
