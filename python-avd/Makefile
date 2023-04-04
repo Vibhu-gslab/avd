@@ -46,18 +46,24 @@ copy-libs: ## Copy files from Ansible AVD collection
 
 .PHONY: fix-libs
 fix-libs: ## Fix/remove various Ansible specifics things from python files
-	cp -r $(CURRENT_DIR)/vendor_overrides/* $(VENDOR_DIR)/
-	find -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
-	find -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
-	find -name '*.py' -exec sed -i 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
-	find -name '*.py' -exec sed -i 's/AnsibleFilterError/AristaAvdError/g' {} +
-	find -name '*.py' -exec sed -i 's/AnsibleError/AristaAvdError/g' {} +
-	find -name '*.py' -exec sed -i 's/AnsibleActionFail/AristaAvdError/g' {} +
-	find -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
-	find -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
-	find -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
-	find -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
+	rm -f $(VENDOR_DIR)/schema/avdschematools.py
+	rm -f $(VENDOR_DIR)/utils/*template*.py
+	sed -i '/template/d' $(VENDOR_DIR)/utils/__init__.py
+
+	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleFilterError/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleError/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleActionFail/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
 	grep 'version:' $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.\+\)/VERSION = "\1"/' > $(PACKAGE_DIR)/version.py
+
+	cp -r $(CURRENT_DIR)/vendor_overrides/* $(VENDOR_DIR)/
 
 .PHONY: copy-test-data
 copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
