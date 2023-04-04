@@ -6,10 +6,10 @@ search:
 ---
 
 # {{ filename.split("/")[-1] }}
-{% for table in documentation.tables %}
+{% for table in documentation.tables | arista.avd.natural_sort %}
 
 ## {{ table.display_name }}
-{%     if table.description %}
+{%     if table.description is arista.avd.defined %}
 
 {{ table.description | trim }}
 {%     endif %}

@@ -313,6 +313,7 @@ interface Ethernet1
    description P2P_LINK_TO_DC1-POD1-SPINE1_Ethernet5
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.17/31
    ptp enable
@@ -322,6 +323,7 @@ interface Ethernet2
    description P2P_LINK_TO_DC1-POD1-SPINE2_Ethernet5
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.19/31
    ptp enable
@@ -359,6 +361,7 @@ interface Ethernet11
    description P2P_LINK_TO_DC1-POD1-SPINE1_Ethernet8
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.21/31
    ptp enable
@@ -368,6 +371,7 @@ interface Ethernet12
    description P2P_LINK_TO_DC1-POD1-SPINE2_Ethernet8
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.23/31
    ptp enable
@@ -723,11 +727,11 @@ ip virtual-router mac-address 00:1c:73:00:dc:01
 | VRF | Routing Enabled |
 | --- | --------------- |
 | default | True |
-| Common_VRF | true |
-| MGMT | false |
-| vrf_with_loopbacks_dc1_pod1_only | true |
-| vrf_with_loopbacks_from_overlapping_pool | true |
-| vrf_with_loopbacks_from_pod_pools | true |
+| Common_VRF | True |
+| MGMT | False |
+| vrf_with_loopbacks_dc1_pod1_only | True |
+| vrf_with_loopbacks_from_overlapping_pool | True |
+| vrf_with_loopbacks_from_pod_pools | True |
 
 #### IP Routing Device Configuration
 

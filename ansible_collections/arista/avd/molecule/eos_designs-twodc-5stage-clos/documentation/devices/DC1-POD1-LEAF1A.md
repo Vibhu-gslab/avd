@@ -177,6 +177,7 @@ interface Ethernet1
    description P2P_LINK_TO_DC1-POD1-SPINE1_Ethernet3
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.1/31
    ptp enable
@@ -186,6 +187,7 @@ interface Ethernet2
    description P2P_LINK_TO_DC1-POD1-SPINE2_Ethernet3
    no shutdown
    mtu 1500
+   mac security profile MACSEC_PROFILE
    no switchport
    ip address 172.17.110.3/31
    ptp enable
@@ -339,7 +341,7 @@ ip virtual-router mac-address 00:1c:73:00:dc:01
 | VRF | Routing Enabled |
 | --- | --------------- |
 | default | True |
-| MGMT | false |
+| MGMT | False |
 
 #### IP Routing Device Configuration
 

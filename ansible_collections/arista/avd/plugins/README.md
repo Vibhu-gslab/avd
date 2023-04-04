@@ -701,6 +701,7 @@ The module arguments are:
   # Conversion is intended to help the user to identify minor issues with the input data, while still allowing the data to be validated.
   # During conversion, messages will generated with information about the host(s) and key(s) which required conversion.
   # conversion_mode:disabled means that conversion will not run.
+  # conversion_mode:error will produce error messages and fail the task.
   # conversion_mode:warning will produce warning messages.
   # conversion_mode:info will produce regular log messages.
   # conversion_mode:debug will produce hidden messages viewable with -v.
@@ -748,12 +749,12 @@ options:
     description: Path to Jinja2 Template file
     required: true
     type: str
-  dest_format_string:
+  dest_format_str:
     description: Format string used to specify target file for each item. 'item' is the current item from 'items'. Like "mypath/{item}.md"
     required: true
     type: str
   items:
-    description: List of strings. Each list item is passed to 'dest_format_string' as 'item' and passed to templater as 'item'
+    description: List of strings. Each list item is passed to 'dest_format_str' as 'item' and passed to templater as 'item'
     required: true
     type: list
     elements: str
