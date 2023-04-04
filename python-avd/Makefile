@@ -31,6 +31,7 @@ copy-libs: ## Copy files from Ansible AVD collection
 	mkdir -p $(SCHEMAS_DIR)
 	mkdir -p $(EOS_CLI_CONFIG_GEN_TEMPLATE_DIR)
 	mkdir -p $(EOS_DESIGNS_MODULES_DIR)
+	mkdir -p $(PACKAGE_DIR)/j2cache
 
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/plugins/plugin_utils/* $(VENDOR_DIR)
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/plugins/module_utils/* $(VENDOR_DIR)
