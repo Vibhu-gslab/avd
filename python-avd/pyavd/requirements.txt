@@ -1,0 +1,6 @@
+pytest
+pyyaml
+jinja2
+jsonschema
+deepmerge
+setuptools
