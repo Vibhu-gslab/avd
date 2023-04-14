@@ -1,0 +1,5 @@
+include pyavd/vendor/schema/*.json
+include pyavd/vendor/schemas/*
+include pyavd/vendor/templates/*
+graft pyavd/vendor/templates/eos
+graft pyavd/j2cache/
