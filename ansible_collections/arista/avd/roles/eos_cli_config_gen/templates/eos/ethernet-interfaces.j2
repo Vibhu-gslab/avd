@@ -7,7 +7,7 @@
                                         arista.avd.convert_dicts('name') |
                                         selectattr('name', 'arista.avd.defined', port_channel_interface_name) |
                                         selectattr('lacp_fallback_mode', 'arista.avd.defined', 'individual') |
-                                        length > 0 %}
+                                        list | length > 0 %}
 {%             set print_ethernet = true %}
 {%         endif %}
 {%     else %}
