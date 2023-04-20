@@ -40,19 +40,20 @@ copy-libs: ## Copy files from Ansible AVD collection
 	rm -f $(EOS_CLI_CONFIG_GEN_TEMPLATE_DIR)/avd_schema_documentation.j2
 
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/python_modules/* $(EOS_DESIGNS_MODULES_DIR)/
-	mv $(VENDOR_DIR)/eos_designs_facts.py $(EOS_DESIGNS_MODULES_DIR)/
+	mv $(VENDOR_DIR)/eos_designs_* $(EOS_DESIGNS_MODULES_DIR)/
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/schemas/eos_designs.schema.yml $(SCHEMAS_DIR)/
 
 .PHONY: fix-libs
 fix-libs: ## Fix/remove various Ansible specifics things from python files
 	rm -f $(VENDOR_DIR)/schema/avdschematools.py
 	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/^from __future__ import.*/from __future__ import annotations/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleFilterError/AristaAvdError/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleError/AristaAvdError/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleActionFail/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils\.eos_designs_shared_utils/$(VENDOR_IMPORT)\.eos_designs\.eos_designs_shared_utils/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
