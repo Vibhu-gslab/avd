@@ -1,0 +1,7 @@
+# Some of these ignores might overlap the ignore in the parent AVD repo root.
+
+__pycache__/
+/pyavd/vendor/
+/pyavd/j2cache/
+/pyavd/version.py
+/pyavd/eos_cli_config_gen.templates.zip
