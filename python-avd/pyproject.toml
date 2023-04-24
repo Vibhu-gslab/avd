@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="pyavd"
+version = "4.0.0-dev9"
+authors=[{ name = "Arista Networks", email = "ansible@arista.com"}]
+description="Arista validated designs"
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Testing",
+]
+keywords = ["pyavd"]
+dependencies = [
+    "jinja2>=3.0",
+    "pytest",
+    "pyyaml",
+    "jinja2",
+    "jsonschema",
+    "deepmerge"
+]
+requires-python = ">=3.10"
+
+# [project.urls]
+# Homepage = ""
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["pyavd*"]
+exclude = ["vendor_overrides*"]
