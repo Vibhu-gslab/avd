@@ -22,6 +22,11 @@ dep: copy-libs fix-libs copy-test-data ## Copy and Fix Ansible AVD python files
 	rm -rf $(VENDOR_DIR)
 	rm -rf $(SCHEMAS_DIR)
 
+.PHONY: build
+build: ##Create pyavd package
+	pip install build
+	python -m build --wheel
+
 .PHONY: copy-libs
 copy-libs: ## Copy files from Ansible AVD collection
 	rm -rf $(VENDOR_DIR)
@@ -47,19 +52,19 @@ copy-libs: ## Copy files from Ansible AVD collection
 fix-libs: ## Fix/remove various Ansible specifics things from python files
 	rm -f $(VENDOR_DIR)/schema/avdschematools.py
 	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/^from __future__ import.*/from __future__ import annotations/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleFilterError/AristaAvdError/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleError/AristaAvdError/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleActionFail/AristaAvdError/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils\.eos_designs_shared_utils/$(VENDOR_IMPORT)\.eos_designs\.eos_designs_shared_utils/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible\.utils\.display/from $(VENDOR_IMPORT)\.utils\.display/g' {} +
-	grep 'version:' $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.\+\)/VERSION = "\1"/' > $(PACKAGE_DIR)/version.py
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/^from __future__ import.*/from __future__ import annotations/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e '/^__metaclass__ = type/d' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/AnsibleFilterError/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/AnsibleError/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/AnsibleActionFail/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils\.eos_designs_shared_utils/$(VENDOR_IMPORT)\.eos_designs\.eos_designs_shared_utils/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/from ansible\.utils\.display/from $(VENDOR_IMPORT)\.utils\.display/g' {} +
+	grep 'version:' $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.*\)/VERSION = "\1"/' > $(PACKAGE_DIR)/version.py
 
 	cp -r $(CURRENT_DIR)/vendor_overrides/* $(VENDOR_DIR)/
 
@@ -91,7 +96,7 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 	rm $(TESTS_ARTIFACTS)/eos_cli_config_gen/expected_configs/tcam-profile.cfg
 ## Remove blank line in empty template result (some weird ansible behavior)
 	echo -n '' > $(TESTS_ARTIFACTS)/eos_cli_config_gen/expected_configs/generate-default-config.cfg
-	find $(TESTS_ARTIFACTS)/eos_cli_config_gen/ -name '*.yml' -exec sed -i 's/!unsafe //g' {} +
+	find $(TESTS_ARTIFACTS)/eos_cli_config_gen/ -name '*.yml' -exec sed -i -e 's/!unsafe //g' {} +
 
 ## eos_designs
 	cp $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/defaults/main/*.yml $(TESTS_ARTIFACTS)/eos_designs/
@@ -124,9 +129,9 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 #	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
 #		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
-#	sed -i -e "s/\"\(\[.*\]\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
-#	sed -i -e "s/\"\({.*}\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
-#	sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
+	sed -i -e "s/\"\(\[.*\]\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
+	sed -i -e "s/\"\({.*}\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
+	sed -i -e 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
 
 ## Template var files since we do not support templating of vars at runtime.
 	$(CURRENT_DIR)/runner.py --template_vars \
