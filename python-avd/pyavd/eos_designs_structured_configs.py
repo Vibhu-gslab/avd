@@ -6,6 +6,7 @@ from .vendor.eos_designs.base import AvdStructuredConfig as EosDesignsBase
 from .vendor.eos_designs.connected_endpoints import AvdStructuredConfig as EosDesignsConnectedEndpoints
 from .vendor.eos_designs.core_interfaces import AvdStructuredConfig as EosDesignsCoreInterfaces
 from .vendor.eos_designs.custom_structured_configuration import AvdStructuredConfig as EosDesignsCustomStructuredConfiguration
+from .vendor.eos_designs.eos_designs_shared_utils import SharedUtils
 from .vendor.eos_designs.inband_management import AvdStructuredConfig as EosDesignsInbandManagement
 from .vendor.eos_designs.l3_edge import AvdStructuredConfig as EosDesignsL3Edge
 from .vendor.eos_designs.mlag import AvdStructuredConfig as EosDesignsMlag
@@ -66,11 +67,13 @@ def eos_designs_structured_configs(hostname: str, vars: dict, modules: list[str]
         vars,
     )
 
+    shared_utils = SharedUtils(module_vars, None)
+
     for module in modules:
         if module not in EOS_DESIGNS_MODULES:
             raise ValueError(f"Unknown eos_designs module '{module}' during render of eos_designs_structured_config for host '{hostname}'")
 
-        eos_designs_module: AvdFacts = EOS_DESIGNS_MODULES[module](module_vars, None)
+        eos_designs_module: AvdFacts = EOS_DESIGNS_MODULES[module](module_vars, shared_utils)
         results = eos_designs_module.render()
 
         # Modules can return a dict or a list of dicts

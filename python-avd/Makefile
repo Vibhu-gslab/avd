@@ -40,19 +40,20 @@ copy-libs: ## Copy files from Ansible AVD collection
 	rm -f $(EOS_CLI_CONFIG_GEN_TEMPLATE_DIR)/avd_schema_documentation.j2
 
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/python_modules/* $(EOS_DESIGNS_MODULES_DIR)/
-	mv $(VENDOR_DIR)/eos_designs_facts.py $(EOS_DESIGNS_MODULES_DIR)/
+	mv $(VENDOR_DIR)/eos_designs_* $(EOS_DESIGNS_MODULES_DIR)/
 	cp -r $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/roles/eos_designs/schemas/eos_designs.schema.yml $(SCHEMAS_DIR)/
 
 .PHONY: fix-libs
 fix-libs: ## Fix/remove various Ansible specifics things from python files
 	rm -f $(VENDOR_DIR)/schema/avdschematools.py
 	find $(PACKAGE_DIR) -name '__pycache__' -exec rm -rf {} +
-	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^from __future__ import/d' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/^from __future__ import.*/from __future__ import annotations/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i '/^__metaclass__ = type/d' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/from ansible.errors import /from $(VENDOR_IMPORT).errors import /g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleFilterError/AristaAvdError/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleError/AristaAvdError/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/AnsibleActionFail/AristaAvdError/g' {} +
+	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils\.eos_designs_shared_utils/$(VENDOR_IMPORT)\.eos_designs\.eos_designs_shared_utils/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.plugin_utils/$(VENDOR_IMPORT)/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.module_utils/$(VENDOR_IMPORT)/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
@@ -115,34 +116,31 @@ copy-test-data: ## Copy inventory files from AVD collection Molecule scenario.
 	done
 
 ## Update test vars for default vars.
-	sed -i -e 's/{{ inventory_dir }}/$(PACKAGE_DIR)\/tests\/eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
+#	sed -i -e 's/{{ inventory_dir }}/$(PACKAGE_DIR)\/tests\/eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
 
-	$(CURRENT_DIR)/runner.py --template_vars \
-	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/*.yml' \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
-		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
+#	$(CURRENT_DIR)/runner.py --template_vars \
+#	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/*.yml' \
+#	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
+#	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
+#		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
-	sed -i -e "s/\"\(\[.*\]\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
-	sed -i -e "s/\"\({.*}\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
-	sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
+#	sed -i -e "s/\"\(\[.*\]\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
+#	sed -i -e "s/\"\({.*}\)\"/\1/g" $(TESTS_ARTIFACTS)/eos_designs/main.yml
+#	sed -i 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' $(TESTS_ARTIFACTS)/eos_designs/main.yml
 
 ## Template var files since we do not support templating of vars at runtime.
 	$(CURRENT_DIR)/runner.py --template_vars \
 	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*' \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
 		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
 ## Remove quotes from templated lists or dicts: "[...]" -> [...] and "{...}" -> {...}
 	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e 's/"\(\[.*\]\)"/\1/g' {} +
 	find $(TESTS_ARTIFACTS)/eos_designs/vars -name '*.json' -exec sed -i -e 's/"\({.*}\)"/\1/g' {} +
+
+## Template var files since we do not support templating of vars at runtime. (not sure why this second round is needed, but it is.)
+	$(CURRENT_DIR)/runner.py --template_vars \
+	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*' \
+		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
 .PHONY: test-0
 test-0: ## Run tests by parsing test inputs and comparing with expected configs
@@ -164,11 +162,6 @@ test-2: ## Run tests by parsing test inputs and comparing with expected structur
 	$(CURRENT_DIR)/runner.py --eos_designs_structured_configs \
 	    --factsfile '$(TESTS_ARTIFACTS)/eos_designs/facts/eos_designs_facts.yml' \
 	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*' \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
 		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml \
 		--struct_cfgfiles $(TESTS_ARTIFACTS)/eos_designs/structured_configs
 	diff -q $(TESTS_ARTIFACTS)/eos_designs/expected_structured_configs/ $(TESTS_ARTIFACTS)/eos_designs/structured_configs/
@@ -178,11 +171,6 @@ test-1: ## Run tests by parsing test inputs and comparing with expected configs
 	$(CURRENT_DIR)/runner.py --eos_designs_facts \
 	    --factsfile '$(TESTS_ARTIFACTS)/eos_designs/facts/eos_designs_facts.yml' \
 	    --device_varfiles '$(TESTS_ARTIFACTS)/eos_designs/vars/*' \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/main.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-connected-endpoints-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-node-type-keys.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-platform-settings.yml \
-	    --common_varfile $(TESTS_ARTIFACTS)/eos_designs/default-templates.yml \
 		--common_varfile $(TESTS_ARTIFACTS)/eos_designs/pyavd_test_vars.yml
 
 .PHONE: test
