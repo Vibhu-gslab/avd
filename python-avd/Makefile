@@ -23,7 +23,7 @@ dep: copy-libs fix-libs copy-test-data ## Copy and Fix Ansible AVD python files
 	rm -rf $(SCHEMAS_DIR)
 
 .PHONY: build
-build: ##Create pyavd package
+build: ##Create pyavd package, (Note: Run make dep first)
 	pip install build
 	python -m build --wheel
 
