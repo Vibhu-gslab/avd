@@ -64,7 +64,9 @@ fix-libs: ## Fix/remove various Ansible specifics things from python files
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.plugins\.filter/$(VENDOR_IMPORT)\.j2\.filter/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/ansible_collections\.arista\.avd\.roles\.eos_designs\.python_modules/$(VENDOR_IMPORT)\.eos_designs/g' {} +
 	find $(PACKAGE_DIR) -name '*.py' -exec sed -i -e 's/from ansible\.utils\.display/from $(VENDOR_IMPORT)\.utils\.display/g' {} +
-	grep 'version:' $(ANSIBLE_AVD_DIR)/ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.*\)/VERSION = "\1"/' > $(PACKAGE_DIR)/version.py
+	PYAVD_VERSION=$$(grep 'version:' ../ansible_collections/arista/avd/galaxy.yml | sed -e 's/version: \(.*\)/ "\1"/') ; \
+    PYAVD_VERSION+="-$$(grep 'version:' pyavd/pyavd_version_suffix.txt | sed -e 's/version: \(.*\)/ "\1"/')" ; \
+    echo $$PYAVD_VERSION | sed 's/"- "/+/g' | sed 's/-/./g' | sed 's/"//g' > $(PACKAGE_DIR)/VERSION
 
 	cp -r $(CURRENT_DIR)/vendor_overrides/* $(VENDOR_DIR)/
 

@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name="pyavd"
-version = "4.0.0-dev9"
+dynamic = ["version", "dependencies"]
 authors=[{ name = "Arista Networks", email = "ansible@arista.com"}]
 description="Arista validated designs"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = { file = "pyavd/LICENSE" }
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache License",
     "Operating System :: OS Independent",
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
@@ -20,14 +20,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 keywords = ["pyavd"]
-dependencies = [
-    "jinja2>=3.0",
-    "pytest",
-    "pyyaml",
-    "jinja2",
-    "jsonschema",
-    "deepmerge"
-]
+
 requires-python = ">=3.10"
 
 # [project.urls]
@@ -39,3 +32,7 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["pyavd*"]
 exclude = ["vendor_overrides*"]
+
+[tool.setuptools.dynamic]
+version = {file = ["pyavd/VERSION"]}
+dependencies = {file = ["requirements.txt"]}

@@ -1,0 +1,5 @@
+jinja2>=3.0
+pytest
+pyyaml
+jsonschema>=4.5.1
+deepmerge>=1.1.0
