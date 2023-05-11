@@ -34,5 +34,5 @@ include = ["pyavd*"]
 exclude = ["vendor_overrides*"]
 
 [tool.setuptools.dynamic]
-version = {file = ["pyavd/VERSION"]}
+version = {attr = "pyavd.version.VERSION"}
 dependencies = {file = ["requirements.txt"]}
