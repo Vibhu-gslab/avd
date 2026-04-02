@@ -16,3 +16,4 @@ if __name__ == "__main__":
     log_level = logging.getLevelName(log_level_str)
     logging.basicConfig(level=log_level, format="[build_schemas] - %(message)s")
     build_schemas()
+    # hello
